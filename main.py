@@ -111,7 +111,7 @@ class Main(Star):
 
     # ==================== 环境翻译（无需@bot）====================
 
-    @filter.regex(r"\S")  # 匹配任何非空白消息
+    @filter.event_message_type(filter.EventMessageType.GROUP_MESSAGE)
     async def on_ambient_message(self, event: AstrMessageEvent):
         """监听所有群消息：检测外语，静默翻译并发送"""
         if not self.enabled or not self.input_enabled:
