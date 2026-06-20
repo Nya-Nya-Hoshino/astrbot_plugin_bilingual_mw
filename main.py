@@ -166,7 +166,11 @@ class Main(Star):
         lang_name = {"ja": "日语", "en": "英语", "ko": "韩语", "fr": "法语", "de": "德语", "ru": "俄语"}.get(lang, lang)
         # 清洗 MSG_ID 标签
         clean_original = re.sub(r"\s*\[MSG_ID:\d+\]\s*", "", original).strip()
-        text = f"{lang_name}翻译:\n{translation}\n\n原文:\n{clean_original}"
+        text = (
+            f"{lang_name}翻译:{translation}\n"
+            f"原文:{clean_original}\n"
+            f"（温馨提示：为防止误识别，请勿引用此消息）"
+        )
         return MessageChain().message(text) if MessageChain else None
 
     # ==================== 输入侧 ====================
