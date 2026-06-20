@@ -61,6 +61,17 @@ class Main(Star):
             f"input={self.input_enabled} output={self.output_enabled} "
             f"langdetect={_HAS_LANGDETECT} target={self.target_lang} debug={self.debug}"
         )
+        logger.error("[bilingual_mw] 插件已启动！等待消息触发...")
+
+    # ==================== 诊断探针 ====================
+
+    @filter.on_decorating_result(priority=100)
+    async def _probe_result(self, event: AstrMessageEvent):
+        logger.error("[bilingual_mw] !!! on_decorating_result 调度成功 !!!")
+
+    @filter.on_llm_request()
+    async def _probe_llm(self, event: AstrMessageEvent, req=None):
+        logger.error("[bilingual_mw] !!! on_llm_request 调度成功 !!!")
 
     # ==================== 语言检测 ====================
 
