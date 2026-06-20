@@ -84,6 +84,13 @@ class Main(Star):
         )
         event.stop_event()
 
+    # ==================== 极限诊断 ====================
+
+    @filter.on_decorating_result(priority=100)
+    async def _bare_test(self, event: AstrMessageEvent):
+        """极限测试：单纯打印，确认框架是否调度本插件的 on_decorating_result"""
+        logger.error("[bilingual_mw] !!!!! _bare_test FIRED (priority=100) !!!!!")
+
     # ==================== 语言检测 ====================
 
     @staticmethod
