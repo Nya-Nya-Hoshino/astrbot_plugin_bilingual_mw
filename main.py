@@ -117,6 +117,8 @@ class Main(Star):
         if not self.enabled or not self.input_enabled:
             return
         text = event.message_str.strip()
+        # 清洗消息元数据标签
+        text = re.sub(r"\s*\[MSG_ID:\d+\]\s*", "", text).strip()
         if not text or text.startswith("/"):
             return
         lang = self._detect_language(text)
