@@ -93,9 +93,11 @@ class Main(Star):
         clean = Main._strip_symbols(text)
         if len(clean.strip()) < 3:
             return None
-        # 中文优先：含CJK字符超过20%直接跳过翻译
-        cjk = sum(1 for ch in clean if 0x4E00 <= ord(ch) <= 0x9FFF)
-        if cjk / max(len(clean), 1) > 0.2:
+        # 有假名(kana) → 日语，不含假名的纯CJK → 中文 → 跳过
+        has_kana = any(0x3040 <= ord(ch) <= 0x30FF for ch in clean)
+        has_cjk = any(0x4E00 <= ord(ch) <= 0x9FFF for ch in clean)
+        if has_cjk and not has_kana:
+            # 纯汉字无假名 → 中文
             return None
         if _HAS_LANGDETECT:
             try:
