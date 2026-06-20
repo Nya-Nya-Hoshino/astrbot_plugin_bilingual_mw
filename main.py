@@ -93,6 +93,10 @@ class Main(Star):
         clean = Main._strip_symbols(text)
         if len(clean.strip()) < 3:
             return None
+        # 中文优先：含CJK字符超过20%直接跳过翻译
+        cjk = sum(1 for ch in clean if 0x4E00 <= ord(ch) <= 0x9FFF)
+        if cjk / max(len(clean), 1) > 0.2:
+            return None
         if _HAS_LANGDETECT:
             try:
                 lang = Main._normalize_lang(lang_detect(clean))
