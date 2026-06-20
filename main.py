@@ -61,30 +61,28 @@ class Main(Star):
             f"input={self.input_enabled} output={self.output_enabled} "
             f"langdetect={_HAS_LANGDETECT} target={self.target_lang} debug={self.debug}"
         )
-        logger.error("[bilingual_mw] 插件已启动！等待消息触发...")
 
-    # ==================== 诊断探针 ====================
-
-    @filter.on_decorating_result(priority=100)
-    async def _probe_result(self, event: AstrMessageEvent):
-        logger.error("[bilingual_mw] !!! on_decorating_result 调度成功 !!!")
-
-    @filter.on_llm_request()
-    async def _probe_llm(self, event: AstrMessageEvent, req=None):
-        logger.error("[bilingual_mw] !!! on_llm_request 调度成功 !!!")
 
     # ==================== 语言检测 ====================
+
+    @staticmethod
+    def _normalize_lang(lang: str) -> str:
+        """归一化语言代码: zh-cn/zh-tw → zh"""
+        if lang.startswith("zh"):
+            return "zh"
+        return lang
 
     @staticmethod
     def _detect_language(text: str) -> str | None:
         if not text or not text.strip():
             return None
         text = text.strip()
-        if len(text) < 3:
+        # 跳过命令和太短的文本
+        if len(text) < 4 or text.startswith("/"):
             return None
         if _HAS_LANGDETECT:
             try:
-                return lang_detect(text)
+                return Main._normalize_lang(lang_detect(text))
             except (LangDetectException, Exception):
                 pass
         return Main._unicode_detect(text)
