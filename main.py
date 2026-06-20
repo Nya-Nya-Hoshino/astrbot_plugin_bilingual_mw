@@ -12,6 +12,11 @@ except ImportError:
         return lambda cls: cls
 
 try:
+    from astrbot.core.message.message_event_result import MessageChain
+except ImportError:
+    MessageChain = None
+
+try:
     from langdetect import detect as lang_detect
     from langdetect.lang_detect_exception import LangDetectException
     _HAS_LANGDETECT = True
@@ -122,8 +127,15 @@ class Main(Star):
             return
         translation = await self._translate(prompt, source_lang=lang)
         if translation:
+            # 注入 LLM 上下文
             req.prompt = self.template_input.format(original=prompt, translation=translation)
             logger.info(f"[bilingual_mw] 输入翻译: {lang}→{self.target_lang}")
+            # 发送翻译到聊天（用户可见）
+            if MessageChain:
+                try:
+                    await event.send(MessageChain().message(f"🌐 翻译: {translation}"))
+                except Exception as e:
+                    logger.warning(f"[bilingual_mw] 发送翻译消息失败: {e}")
             if self.debug:
                 logger.debug(f"[bilingual_mw] 注入后: {req.prompt[:200]}")
         else:
