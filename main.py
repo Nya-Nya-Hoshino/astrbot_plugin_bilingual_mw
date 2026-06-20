@@ -97,16 +97,30 @@ class Main(Star):
         has_kana = any(0x3040 <= ord(ch) <= 0x30FF for ch in clean)
         has_cjk = any(0x4E00 <= ord(ch) <= 0x9FFF for ch in clean)
         if has_cjk and not has_kana:
-            # 纯汉字无假名 → 中文
+            return None
+        # 英语检测：至少4个连续英文字母才算
+        alpha_only = re.sub(r"[^a-zA-Z]", " ", clean)
+        words = [w for w in alpha_only.split() if len(w) >= 3]
+        has_enough_en = len(words) >= 1 and len("".join(words)) >= 4
+        # 日语检测：有假名即可
+        has_ja = has_kana
+        if not has_enough_en and not has_ja:
             return None
         if _HAS_LANGDETECT:
             try:
                 lang = Main._normalize_lang(lang_detect(clean))
-                return lang if lang in _ALLOWED_LANGS else None
+                if lang in _ALLOWED_LANGS:
+                    # 二次确认：langdetect说英语但没足够英文 → 拒绝
+                    if lang == "en" and not has_enough_en:
+                        return None
+                    return lang
             except (LangDetectException, Exception):
                 pass
-        lang = Main._unicode_detect(clean)
-        return lang if lang in _ALLOWED_LANGS else None
+        if has_ja:
+            return "ja"
+        if has_enough_en:
+            return "en"
+        return None
 
     @staticmethod
     def _unicode_detect(text: str) -> str | None:
