@@ -6,6 +6,11 @@ from astrbot.api import logger
 from astrbot.api.message_components import Plain
 
 try:
+    from astrbot.core.platform.message_type import MessageType
+except ImportError:
+    MessageType = None
+
+try:
     from astrbot.api.all import register
 except ImportError:
     def register(*args, **kwargs):
@@ -109,6 +114,32 @@ class Main(Star):
         best = max(scores, key=scores.get)
         return best if scores[best] / total > 0.15 else None
 
+    # ==================== 环境翻译（无需@bot）====================
+
+    @filter.event_message_type(MessageType.GROUP_MESSAGE)
+    async def on_ambient_message(self, event: AstrMessageEvent):
+        """监听所有群消息：检测外语，静默翻译并发送"""
+        if not self.enabled or not self.input_enabled:
+            return
+        text = event.message_str.strip()
+        if not text or text.startswith("/"):
+            return
+        lang = self._detect_language(text)
+        if lang is None or lang == self.target_lang:
+            return
+        translation = await self._translate(text, source_lang=lang)
+        if translation:
+            await event.send(
+                self._build_translation_reply(text, translation, lang)
+            )
+            logger.info(f"[bilingual_mw] 环境翻译: {lang}→{self.target_lang} ({len(text)}字)")
+
+    @staticmethod
+    def _build_translation_reply(original: str, translation: str, lang: str) -> "MessageChain":
+        lang_name = {"ja": "日语", "en": "英语", "ko": "韩语", "fr": "法语", "de": "德语", "ru": "俄语"}.get(lang, lang)
+        text = f"🌐 {lang_name}翻译:\n{translation}\n\n📝 原文:\n{original}"
+        return MessageChain().message(text) if MessageChain else None
+
     # ==================== 输入侧 ====================
 
     @filter.on_llm_request()
@@ -127,15 +158,8 @@ class Main(Star):
             return
         translation = await self._translate(prompt, source_lang=lang)
         if translation:
-            # 注入 LLM 上下文
             req.prompt = self.template_input.format(original=prompt, translation=translation)
-            logger.info(f"[bilingual_mw] 输入翻译: {lang}→{self.target_lang}")
-            # 发送翻译到聊天（用户可见）
-            if MessageChain:
-                try:
-                    await event.send(MessageChain().message(f"🌐 翻译: {translation}"))
-                except Exception as e:
-                    logger.warning(f"[bilingual_mw] 发送翻译消息失败: {e}")
+            logger.info(f"[bilingual_mw] 输入翻译注入LLM: {lang}→{self.target_lang}")
             if self.debug:
                 logger.debug(f"[bilingual_mw] 注入后: {req.prompt[:200]}")
         else:
