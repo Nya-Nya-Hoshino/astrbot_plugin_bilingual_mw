@@ -146,14 +146,10 @@ class Main(Star):
         """监听所有群消息：检测外语，静默翻译并发送"""
         if not self.enabled or not self.input_enabled:
             return
-        # 跳过含图片/视频/文件的非纯文本消息
-        if not self._is_text_only(event):
-            return
         text = event.message_str.strip()
-        # 清洗消息元数据标签，剥离URL
+        # 清洗消息元数据标签
         text = re.sub(r"\s*\[MSG_ID:\d+\]\s*", "", text).strip()
-        text = re.sub(r"https?://\S+", "", text).strip()
-        if not text or text.startswith("/") or len(text) < 4:
+        if not text or text.startswith("/"):
             return
         lang = self._detect_language(text)
         if lang is None or lang == self.target_lang:
@@ -164,19 +160,6 @@ class Main(Star):
                 self._build_translation_reply(text, translation, lang)
             )
             logger.info(f"[bilingual_mw] 环境翻译: {lang}→{self.target_lang} ({len(text)}字)")
-
-    @staticmethod
-    def _is_text_only(event: AstrMessageEvent) -> bool:
-        """检查消息是否纯文本（无图片/视频/文件/语音）"""
-        try:
-            from astrbot.api.message_components import Image, Video, File, Record
-            non_text = (Image, Video, File, Record)
-            for comp in event.get_messages():
-                if isinstance(comp, non_text):
-                    return False
-        except Exception:
-            pass
-        return True
 
     @staticmethod
     def _build_translation_reply(original: str, translation: str, lang: str) -> "MessageChain":
