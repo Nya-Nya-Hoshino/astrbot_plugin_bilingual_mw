@@ -147,8 +147,9 @@ class Main(Star):
         if not self.enabled or not self.input_enabled:
             return
         text = event.message_str.strip()
-        # 清洗消息元数据标签
+        # 清洗 MSG_ID 标签和 URL（URL中拉丁字符会导致误判为英语）
         text = re.sub(r"\s*\[MSG_ID:\d+\]\s*", "", text).strip()
+        text = re.sub(r"https?://\S+", "", text).strip()
         if not text or text.startswith("/"):
             return
         lang = self._detect_language(text)
