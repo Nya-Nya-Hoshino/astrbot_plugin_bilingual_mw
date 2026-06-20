@@ -5,6 +5,13 @@ from astrbot.api.star import Context, Star
 from astrbot.api import logger
 from astrbot.api.message_components import Plain
 
+# 显式注册（部分 AstrBot 版本需要）
+try:
+    from astrbot.api.all import register
+except ImportError:
+    def register(*args, **kwargs):
+        return lambda cls: cls
+
 # 语言检测: 优先 langdetect，不可用时回退 Unicode 启发式
 try:
     from langdetect import detect as lang_detect
@@ -34,6 +41,7 @@ _RE_INLINE_SANITIZE = re.compile(
 _RE_CQ_INLINE = re.compile(r"\[CQ:\w+[,\]]", re.IGNORECASE)
 
 
+@register("astrbot_plugin_bilingual_mw", "Nya-Nya-Hoshino", "双语语言中间件——自动识别非中文消息，LLM人格感知翻译", "1.1.2")
 class Main(Star):
     def __init__(self, context: Context, config: dict = None):
         super().__init__(context)
