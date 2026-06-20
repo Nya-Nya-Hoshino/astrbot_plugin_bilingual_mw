@@ -6,11 +6,6 @@ from astrbot.api import logger
 from astrbot.api.message_components import Plain
 
 try:
-    from astrbot.core.platform.message_type import MessageType
-except ImportError:
-    MessageType = None
-
-try:
     from astrbot.api.all import register
 except ImportError:
     def register(*args, **kwargs):
@@ -116,7 +111,7 @@ class Main(Star):
 
     # ==================== 环境翻译（无需@bot）====================
 
-    @filter.event_message_type(MessageType.GROUP_MESSAGE)
+    @filter.regex(r"\S")  # 匹配任何非空白消息
     async def on_ambient_message(self, event: AstrMessageEvent):
         """监听所有群消息：检测外语，静默翻译并发送"""
         if not self.enabled or not self.input_enabled:
