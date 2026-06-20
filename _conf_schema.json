@@ -38,5 +38,10 @@
         "description": "调试模式：输出语言检测结果、翻译内容、耗时",
         "type": "bool",
         "default": false
+    },
+    "block_segment_on_output": {
+        "description": "输出翻译时屏蔽后续分段插件（防止双语原文+翻译被截断分离）",
+        "type": "bool",
+        "default": true
     }
 }
