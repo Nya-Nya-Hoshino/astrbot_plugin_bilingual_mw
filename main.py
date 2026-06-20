@@ -88,13 +88,15 @@ class Main(Star):
         if not text or not text.strip():
             return None
         text = text.strip()
-        if len(text) < 4 or text.startswith("/"):
+        if text.startswith("/"):
             return None
         clean = Main._strip_symbols(text)
-        if len(clean.strip()) < 3:
+        # 日文短词（含假名≥2字即生效），英文长词（需≥4字）
+        has_kana = any(0x3040 <= ord(ch) <= 0x30FF for ch in clean)
+        min_len = 2 if has_kana else 4
+        if len(clean.replace(" ", "")) < min_len:
             return None
         # 有假名(kana) → 日语，不含假名的纯CJK → 中文 → 跳过
-        has_kana = any(0x3040 <= ord(ch) <= 0x30FF for ch in clean)
         has_cjk = any(0x4E00 <= ord(ch) <= 0x9FFF for ch in clean)
         if has_cjk and not has_kana:
             return None
