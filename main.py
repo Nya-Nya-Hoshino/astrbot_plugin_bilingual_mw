@@ -59,6 +59,30 @@ class Main(Star):
             f"input={self.input_enabled} output={self.output_enabled} "
             f"target={self.target_lang} block_segment={self.block_segment} debug={self.debug}"
         )
+        # 启动时强制打开 debug 日志确保可见
+        logger.warning(
+            f"[bilingual_mw] ===== 启动诊断 =====\n"
+            f"  enabled: {self.enabled}\n"
+            f"  input_translation: {self.input_enabled}\n"
+            f"  output_translation: {self.output_enabled}\n"
+            f"  langdetect: {_HAS_LANGDETECT}\n"
+            f"  block_segment: {self.block_segment}\n"
+            f"  如果群聊发外语消息后看不到 [bilingual_mw] 日志，请发送 /双语诊断"
+        )
+
+    # ==================== 诊断指令 ====================
+
+    @filter.command("双语诊断")
+    async def cmd_diagnose(self, event: AstrMessageEvent):
+        """诊断指令：确认插件是否正常加载"""
+        yield event.plain_result(
+            f"🔍 双语中间件诊断\n"
+            f"enabled={self.enabled} input={self.input_enabled} output={self.output_enabled}\n"
+            f"langdetect={_HAS_LANGDETECT} target={self.target_lang} block_segment={self.block_segment}\n"
+            f"persona_aware={self.persona_aware} debug={self.debug}\n\n"
+            f"发送一条外语消息测试，观察日志中是否有 [bilingual_mw] 输出"
+        )
+        event.stop_event()
 
     # ==================== 语言检测 ====================
 
@@ -108,7 +132,9 @@ class Main(Star):
     @filter.on_llm_request()
     async def on_llm_request(self, event: AstrMessageEvent, req=None):
         """LLM请求前：检测用户消息语言，非中文时翻译并注入"""
+        logger.warning(f"[bilingual_mw] === on_llm_request 钩子触发 === (enabled={self.enabled}, input={self.input_enabled})")
         if not self.enabled or not self.input_enabled:
+            logger.info("[bilingual_mw] 输入翻译已禁用，跳过")
             return
         if req is None:
             req = event.get_extra("provider_request")
@@ -144,6 +170,7 @@ class Main(Star):
     @filter.on_decorating_result(priority=10)
     async def on_decorating_result(self, event: AstrMessageEvent):
         """消息发送前（priority=10）：检测bot回复语言，非中文时追加翻译"""
+        logger.warning(f"[bilingual_mw] === on_decorating_result 钩子触发 === (enabled={self.enabled}, output={self.output_enabled})")
         if not self.enabled or not self.output_enabled:
             return
 
