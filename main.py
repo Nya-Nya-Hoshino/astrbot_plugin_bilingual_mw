@@ -132,7 +132,9 @@ class Main(Star):
     @staticmethod
     def _build_translation_reply(original: str, translation: str, lang: str) -> "MessageChain":
         lang_name = {"ja": "日语", "en": "英语", "ko": "韩语", "fr": "法语", "de": "德语", "ru": "俄语"}.get(lang, lang)
-        text = f"🌐 {lang_name}翻译:\n{translation}\n\n📝 原文:\n{original}"
+        # 清洗 MSG_ID 标签
+        clean_original = re.sub(r"\s*\[MSG_ID:\d+\]\s*", "", original).strip()
+        text = f"{lang_name}翻译:\n{translation}\n\n原文:\n{clean_original}"
         return MessageChain().message(text) if MessageChain else None
 
     # ==================== 输入侧 ====================
