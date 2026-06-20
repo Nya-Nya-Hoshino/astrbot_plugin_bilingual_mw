@@ -167,9 +167,14 @@ class Main(Star):
 
     # ==================== 发送前过滤（输出侧）====================
 
-    @filter.on_decorating_result(priority=10)
+    @filter.on_decorating_result()
+    async def _hook_test(self, event: AstrMessageEvent):
+        """纯诊断钩子——无 priority，确认框架是否调度 on_decorating_result"""
+        logger.warning("[bilingual_mw] === _hook_test (无priority) 触发 ===")
+
+    @filter.on_decorating_result(priority=0)
     async def on_decorating_result(self, event: AstrMessageEvent):
-        """消息发送前（priority=10）：检测bot回复语言，非中文时追加翻译"""
+        """消息发送前：检测bot回复语言，非中文时追加翻译"""
         logger.warning(f"[bilingual_mw] === on_decorating_result 钩子触发 === (enabled={self.enabled}, output={self.output_enabled})")
         if not self.enabled or not self.output_enabled:
             return
