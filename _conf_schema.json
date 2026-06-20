@@ -1,0 +1,42 @@
+{
+    "enabled": {
+        "description": "启用双语中间件",
+        "type": "bool",
+        "default": true
+    },
+    "input_translation": {
+        "description": "输入侧：识别用户非中文消息并翻译后注入上下文（主模型同时看到原文+翻译）",
+        "type": "bool",
+        "default": true
+    },
+    "output_translation": {
+        "description": "输出侧：检测bot非中文回复并追加人格感知翻译",
+        "type": "bool",
+        "default": true
+    },
+    "translation_template_input": {
+        "description": "输入翻译注入模板。{original}=原文 {translation}=翻译",
+        "type": "string",
+        "default": "[消息翻译: {translation}]\n原文: {original}"
+    },
+    "translation_template_output": {
+        "description": "输出翻译追加模板。{original}=原文 {translation}=翻译",
+        "type": "string",
+        "default": "\n\n（中文）\n{translation}"
+    },
+    "persona_aware": {
+        "description": "人格感知翻译：翻译时注入bot人格设定，使翻译风格匹配人格",
+        "type": "bool",
+        "default": true
+    },
+    "target_language": {
+        "description": "翻译目标语言代码 (zh=中文 en=英语 ja=日语 ko=韩语)",
+        "type": "string",
+        "default": "zh"
+    },
+    "debug_mode": {
+        "description": "调试模式：输出语言检测结果、翻译内容、耗时",
+        "type": "bool",
+        "default": false
+    }
+}

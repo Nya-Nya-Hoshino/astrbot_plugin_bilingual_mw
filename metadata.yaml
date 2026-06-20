@@ -1,0 +1,6 @@
+name: bilingual_mw
+desc: 双语语言中间件——自动识别非中文消息，LLM人格感知翻译，原文+翻译双语呈现。输入输出双端覆盖。
+help: 自动运行无需指令。输入侧识别用户非中文消息并翻译注入上下文，输出侧检测bot非中文回复并追加人格感知翻译。插件优先级10确保在emoji_filter之后、segment_reply之前执行。
+version: v1.0.0
+author: Nya-Nya-Hoshino
+repo: https://github.com/Nya-Nya-Hoshino/astrbot_plugin_bilingual_mw
