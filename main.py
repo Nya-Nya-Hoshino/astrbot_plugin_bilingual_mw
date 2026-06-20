@@ -38,6 +38,8 @@ _RE_INLINE_SANITIZE = re.compile(
     re.IGNORECASE,
 )
 _RE_CQ_INLINE = re.compile(r"\[CQ:\w+[,\]]", re.IGNORECASE)
+_ALLOWED_LANGS = {"ja", "en"}  # 只翻译日语和英语
+_RE_SYMBOLS = re.compile(r"[^\w\s\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF\uAC00-\uD7AF]")
 
 
 @register("astrbot_plugin_bilingual_mw", "Nya-Nya-Hoshino", "双语语言中间件", "1.2.0")
@@ -78,19 +80,27 @@ class Main(Star):
         return lang
 
     @staticmethod
+    def _strip_symbols(text: str) -> str:
+        return _RE_SYMBOLS.sub(" ", text)
+
+    @staticmethod
     def _detect_language(text: str) -> str | None:
         if not text or not text.strip():
             return None
         text = text.strip()
-        # 跳过命令和太短的文本
         if len(text) < 4 or text.startswith("/"):
+            return None
+        clean = Main._strip_symbols(text)
+        if len(clean.strip()) < 3:
             return None
         if _HAS_LANGDETECT:
             try:
-                return Main._normalize_lang(lang_detect(text))
+                lang = Main._normalize_lang(lang_detect(clean))
+                return lang if lang in _ALLOWED_LANGS else None
             except (LangDetectException, Exception):
                 pass
-        return Main._unicode_detect(text)
+        lang = Main._unicode_detect(clean)
+        return lang if lang in _ALLOWED_LANGS else None
 
     @staticmethod
     def _unicode_detect(text: str) -> str | None:
