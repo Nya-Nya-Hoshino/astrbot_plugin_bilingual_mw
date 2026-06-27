@@ -49,7 +49,7 @@ class Main(Star):
         self.config = config or {}
         self.enabled = self.config.get("enabled", True)
         self.input_enabled = self.config.get("input_translation", True)
-        self.output_enabled = self.config.get("output_translation", True)
+        self.output_enabled = self.config.get("output_translation", False)  # v1.4: 默认关闭
         self.template_input = self.config.get(
             "translation_template_input",
             "[消息翻译: {translation}]\n原文: {original}"
@@ -149,9 +149,14 @@ class Main(Star):
         if not self.enabled or not self.input_enabled:
             return
         text = event.message_str.strip()
-        # 清洗 MSG_ID 标签和 URL（URL中拉丁字符会导致误判为英语）
-        text = re.sub(r"\s*\[MSG_ID:\d+\]\s*", "", text).strip()
-        text = re.sub(r"https?://\S+", "", text).strip()
+        # 跳过bot自己发送的消息
+        if event.get_sender_id() == event.get_self_id():
+            return
+        # 清洗 MSG_ID、CQ码、URL（这些含拉丁字符会误判为英语）
+        text = re.sub(r"\s*\[MSG_ID:\d+\]\s*", "", text)
+        text = re.sub(r"\[CQ:[^\]]+\]", "", text)
+        text = re.sub(r"https?://\S+", "", text)
+        text = text.strip()
         if not text or text.startswith("/"):
             return
         lang = self._detect_language(text)

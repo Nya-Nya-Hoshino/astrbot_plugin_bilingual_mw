@@ -10,9 +10,9 @@
         "default": true
     },
     "output_translation": {
-        "description": "输出侧：检测bot非中文回复并追加人格感知翻译",
+        "description": "输出侧：检测bot非中文回复并追加人格感知翻译（v1.4默认关闭）",
         "type": "bool",
-        "default": true
+        "default": false
     },
     "translation_template_input": {
         "description": "输入翻译注入模板。{original}=原文 {translation}=翻译",
