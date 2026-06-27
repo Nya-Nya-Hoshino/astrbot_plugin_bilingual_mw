@@ -150,11 +150,15 @@ class Main(Star):
             return
         text = event.message_str.strip()
         # 跳过bot自己发送的消息
-        if event.get_sender_id() == event.get_self_id():
-            return
-        # 清洗 MSG_ID、CQ码、URL（这些含拉丁字符会误判为英语）
+        try:
+            if event.get_sender_id() == event.get_self_id():
+                return
+        except Exception:
+            pass  # get_self_id 不存在时跳过此检查
+        # 清洗所有非文本组件和元数据（这些含拉丁字符会误判为英语）
         text = re.sub(r"\s*\[MSG_ID:\d+\]\s*", "", text)
         text = re.sub(r"\[CQ:[^\]]+\]", "", text)
+        text = re.sub(r"\[(?:File|Image|Video|Record|Reply|Forward|Json|Xml)[^\]]*\]", "", text, flags=re.IGNORECASE)
         text = re.sub(r"https?://\S+", "", text)
         text = text.strip()
         if not text or text.startswith("/"):
