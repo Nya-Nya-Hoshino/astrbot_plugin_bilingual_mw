@@ -155,11 +155,9 @@ class Main(Star):
                 return
         except Exception:
             pass  # get_self_id 不存在时跳过此检查
-        # 清洗所有非文本组件和元数据（这些含拉丁字符会误判为英语）
-        text = re.sub(r"\s*\[MSG_ID:\d+\]\s*", "", text)
-        text = re.sub(r"\[CQ:[^\]]+\]", "", text)
-        text = re.sub(r"\[(?:File|Image|Video|Record|Reply|Forward|Json|Xml)[^\]]*\]", "", text, flags=re.IGNORECASE)
-        text = re.sub(r"https?://\S+", "", text)
+        # 清洗所有非文本组件和元数据（统一正则通杀）
+        text = re.sub(r"\[[A-Z_]{2,}[^\]]*\]", "", text)   # BILL_CARD/CQ/File/Image/MSG_ID 等
+        text = re.sub(r"https?://\S+", "", text)            # URL
         text = text.strip()
         if not text or text.startswith("/"):
             return
@@ -176,8 +174,9 @@ class Main(Star):
     @staticmethod
     def _build_translation_reply(original: str, translation: str, lang: str) -> "MessageChain":
         lang_name = {"ja": "日语", "en": "英语", "ko": "韩语", "fr": "法语", "de": "德语", "ru": "俄语"}.get(lang, lang)
-        # 清洗 MSG_ID 标签
-        clean_original = re.sub(r"\s*\[MSG_ID:\d+\]\s*", "", original).strip()
+        # 清洗内部标记和URL
+        clean_original = re.sub(r"\[[A-Z_]{2,}[^\]]*\]", "", original)
+        clean_original = re.sub(r"https?://\S+", "", clean_original).strip()
         text = (
             f"{lang_name}翻译:{translation}\n"
             f"原文:{clean_original}\n"
