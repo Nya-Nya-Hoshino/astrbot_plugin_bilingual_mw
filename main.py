@@ -158,7 +158,7 @@ class Main(Star):
         # 清洗所有非文本组件和元数据（显式枚举，精确可控）
         text = re.sub(r"\s*\[MSG_ID:\d+\]\s*", "", text)
         text = re.sub(r"\[CQ:[^\]]+\]", "", text)
-        text = re.sub(r"\[(?:File|Image|Video|Record|Reply|Forward|Json|Xml|BILL_CARD)[^\]]*\]", "", text, flags=re.IGNORECASE)
+        text = re.sub(r"\[(?:File|Image|Video|Record|Reply|Forward|Json|Xml|BILI_CARD|BILL_CARD)[^\]]*\]", "", text, flags=re.IGNORECASE)
         text = re.sub(r"https?://\S+", "", text)
         text = text.strip()
         if not text or text.startswith("/"):
@@ -177,7 +177,7 @@ class Main(Star):
     def _build_translation_reply(original: str, translation: str, lang: str) -> "MessageChain":
         lang_name = {"ja": "日语", "en": "英语", "ko": "韩语", "fr": "法语", "de": "德语", "ru": "俄语"}.get(lang, lang)
         # 清洗内部标记和URL
-        clean_original = re.sub(r"\[(?:File|Image|Video|Record|Reply|Forward|Json|Xml|BILL_CARD)[^\]]*\]", "", original, flags=re.IGNORECASE)
+        clean_original = re.sub(r"\[(?:File|Image|Video|Record|Reply|Forward|Json|Xml|BILI_CARD|BILL_CARD)[^\]]*\]", "", original, flags=re.IGNORECASE)
         clean_original = re.sub(r"\[CQ:[^\]]+\]", "", clean_original)
         clean_original = re.sub(r"https?://\S+", "", clean_original).strip()
         text = (
